@@ -5,8 +5,30 @@ WORKDIR /src
 # Copy solution and restore as distinct layers
 COPY . .
 
+# Install EF Core tools
+RUN dotnet tool install --global dotnet-ef
+
 # Build and publish API
 WORKDIR /src/API
+
+# Add EF Core packages if not already present
+RUN dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+RUN dotnet add package Microsoft.EntityFrameworkCore.Design
+
+# add dotnet-ef tool
+RUN dotnet new tool-manifest --force
+RUN dotnet tool install dotnet-ef
+
+# Use local tool with dotnet prefix
+RUN dotnet dotnet-ef migrations add InitialCreate
+RUN dotnet dotnet-ef database update
+
+
+# Build the project
+RUN dotnet build -c Release
+
+
+# Publish the API
 RUN dotnet publish -c Release -o /app/api
 
 # Build and publish Blazor frontend
@@ -38,26 +60,5 @@ ENTRYPOINT ["/app/start.sh"]
 
 # Instructions:
 # - To build and run: docker build -t dotnetapp . && docker run -p 5000:5000 -p 5001:5001 dotnetapp
-# - Note: EF migrations should be run separately or as part of application startup
-
-# Copy both applications
-COPY --from=build /app/api ./api
-COPY --from=build /app/frontend ./frontend
-
-# Expose ports for both services
-EXPOSE 5000 5001
-
-# Create startup script
-RUN echo '#!/bin/bash\n\
-echo "Starting API..."\n\
-dotnet api/API.dll &\n\
-echo "Starting Frontend..."\n\
-dotnet frontend/Frontend.dll &\n\
-wait' > /app/start.sh && chmod +x /app/start.sh
-
-ENTRYPOINT ["/app/start.sh"]
-
-# Instructions:
-# - To run the API: docker build --target api -t myapi . && docker run -p 5000:5000 myapi
-# - To run the Blazor frontend: docker build --target blazor -t myblazor . && docker run -p 8080:80 myblazor
+# - Note: EF migrations are now applied during build time
 
