@@ -12,8 +12,15 @@ class TaskController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetTasks()
     {
-        var tasks = await _taskService.GetTasksAsync();
-        return Ok(tasks);
+        try
+        {
+            var tasks = await _taskService.GetTasksAsync();
+            return Ok(tasks);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpPost]
@@ -23,8 +30,19 @@ class TaskController : ControllerBase
         {
             return BadRequest("Task data is null.");
         }
-        var createdTask = await _taskService.CreateTaskAsync(taskDto);
-        return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+        try
+        {
+            var createdTask = await _taskService.CreateTaskAsync(taskDto);
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskDto taskDto)
@@ -33,21 +51,47 @@ class TaskController : ControllerBase
         {
             return BadRequest("Task data is null or ID mismatch.");
         }
-        var updatedTask = await _taskService.UpdateTaskAsync(taskDto);
-        if (updatedTask == null)
+        try
+        {
+            var updatedTask = await _taskService.UpdateTaskAsync(taskDto);
+            if (updatedTask == null)
+            {
+                return NotFound();
+            }
+            return Ok(updatedTask);
+        }
+        catch (KeyNotFoundException)
         {
             return NotFound();
         }
-        return Ok(updatedTask);
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
-        var deleted = await _taskService.DeleteTaskAsync(id);
-        if (!deleted)
+        try
+        {
+            var deleted = await _taskService.DeleteTaskAsync(id);
+            if (!deleted)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
         {
             return NotFound();
         }
-        return NoContent();
+        catch (Exception)
+        {
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }   
 }
