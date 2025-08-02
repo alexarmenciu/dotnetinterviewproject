@@ -5,24 +5,8 @@ WORKDIR /src
 # Copy solution and restore as distinct layers
 COPY . .
 
-# Install EF Core tools
-RUN dotnet tool install --global dotnet-ef
-
 # Build and publish API
 WORKDIR /src/API
-
-# Add EF Core packages if not already present
-RUN dotnet add package Microsoft.EntityFrameworkCore.Sqlite
-RUN dotnet add package Microsoft.EntityFrameworkCore.Design
-
-# add dotnet-ef tool
-RUN dotnet new tool-manifest --force
-RUN dotnet tool install dotnet-ef
-
-# Use local tool with dotnet prefix
-RUN dotnet dotnet-ef migrations add InitialCreate
-RUN dotnet dotnet-ef database update
-
 
 # Build the project
 RUN dotnet build -c Release
