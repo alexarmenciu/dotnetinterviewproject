@@ -1,6 +1,9 @@
 using API.Data;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Services
 {
@@ -13,18 +16,19 @@ namespace API.Services
             _context = context;
         }
 
-        public async Task<List<Task>> GetAllTasksAsync()
+        public async Task<List<API.Models.Task>> GetAllTasksAsync()
         {
             return await _context.Tasks.ToListAsync();
         }
 
-        public async Task CreateTaskAsync(Task task)
+        public async Task<API.Models.Task> CreateTaskAsync(API.Models.Task task)
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
+            return task;
         }
 
-        public async Task UpdateTaskAsync(Guid id, Task task)
+        public async Task<API.Models.Task> UpdateTaskAsync(Guid id, API.Models.Task task)
         {
             if (id != task.Id)
             {
@@ -42,18 +46,19 @@ namespace API.Services
             existingTask.IsCompleted = task.IsCompleted;
             existingTask.DueDate = task.DueDate;
 
-
             _context.Entry(existingTask).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            return existingTask;
         }
 
-        public async Task DeleteTaskAsync(Guid id)
+        public async Task<API.Models.Task> DeleteTaskAsync(Guid id)
         {
             var task = await _context.Tasks.FindAsync(id);
             if (task != null)
             {
                 _context.Tasks.Remove(task);
                 await _context.SaveChangesAsync();
+                return task;
             }
             else
             {

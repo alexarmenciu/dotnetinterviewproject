@@ -6,7 +6,9 @@ namespace API.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<API.Models.Task> Tasks { get; set; }
+
+        private string DbPath { get; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -17,6 +19,6 @@ namespace API.Data
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+            => options.UseSqlite($"Data Source={DbPath}");
     }
 }
