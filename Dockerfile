@@ -38,20 +38,17 @@ COPY --from=build /app/frontend ./frontend
 # Copy test results to the final image
 COPY --from=build /app/testresults ./testresults
 
-# Expose ports for both services
-EXPOSE 5000 5001
-
-# Set environment variable for frontend to find backend
-ENV API_BASE_URL=http://localhost:5000
-
-# Create startup script with proper port configuration
+# Create startup script with ports configurable via environment variables
 RUN echo '#!/bin/bash\n\
-echo "Starting API on port 5000..."\n\
-ASPNETCORE_URLS="http://+:5000" dotnet api/API.dll &\n\
+API_PORT="${API_PORT:-5000}"\n\
+FRONTEND_PORT="${FRONTEND_PORT:-5001}"\n\
+export API_BASE_URL="http://localhost:$API_PORT"\n\
+echo "Starting API on port $API_PORT..."\n\
+ASPNETCORE_URLS="http://+:$API_PORT" dotnet api/API.dll &\n\
 API_PID=$!\n\
-echo "Starting Frontend on port 5001..."\n\
+echo "Starting Frontend on port $FRONTEND_PORT..."\n\
 cd /app/frontend\n\
-ASPNETCORE_URLS="http://+:5001" dotnet Frontend.dll &\n\
+ASPNETCORE_URLS="http://+:$FRONTEND_PORT" dotnet Frontend.dll &\n\
 FRONTEND_PID=$!\n\
 wait $API_PID $FRONTEND_PID' > /app/start.sh && chmod +x /app/start.sh
 

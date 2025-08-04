@@ -13,9 +13,7 @@ namespace Frontend.Services
         {
             _httpClient = httpClient;
             // Prefer environment variable, fallback to config
-            _baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
-                ?? config["ApiBaseUrl"]
-                ?? "http://localhost:5000";
+            _baseUrl = $"http://localhost:{Environment.GetEnvironmentVariable("API_PORT") ?? "5000"}";
         }
 
 
