@@ -65,5 +65,18 @@ namespace API.Services
                 throw new KeyNotFoundException("Task not found.");
             }
         }
+
+        public async Task<API.Models.Task> CompleteTaskAsync(Guid id)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null)
+            {
+                throw new KeyNotFoundException("Task not found.");
+            }
+            task.IsCompleted = true;
+            _context.Entry(task).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return task;
+        }
     }
 }

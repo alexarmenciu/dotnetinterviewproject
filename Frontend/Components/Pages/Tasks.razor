@@ -1,0 +1,106 @@
+@page "/tasks"
+@rendermode InteractiveServer
+@using Frontend.Models
+@using Frontend.Services
+@inject TaskApiService TaskService
+
+<h3 class="text-2xl font-bold mb-6 text-center text-gray-800">Tasks</h3>
+
+@if (tasks == null)
+{
+    <p class="text-gray-500 italic text-center">Loading...</p>
+}
+else
+{
+    <ul class="space-y-4 mb-8">
+        @foreach (var task in tasks)
+        {
+            <li class="flex flex-col md:flex-row items-center justify-between bg-gray-100 rounded-lg p-4 shadow-sm gap-2">
+                <div class="flex items-center gap-4 flex-1">
+                    <input type="checkbox" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" @bind="task.IsCompleted" @bind:after="async () => await UpdateTask(task)" />
+                    <div class="flex flex-col gap-1 w-full">
+                        <div class="font-semibold text-lg text-gray-800 @((task.IsCompleted ? "line-through text-gray-400" : ""))">@task.Title</div>
+                        <div class="text-gray-600">@task.Description</div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <label class="text-sm text-gray-500">Due:</label>
+                            <input type="date" class="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm" @bind="task.DueDate" @bind:after="async () => await UpdateTask(task)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 md:flex-row md:items-center md:gap-2">
+                    <select class="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                            @bind="taskStatus[task.Id]"
+                            @bind:after="async () => await CompleteTask(task, taskStatus[task.Id])">
+                        <option value="Incomplete">Incomplete</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    <button @onclick="() => DeleteTask(task.Id)" class="ml-0 md:ml-4 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors">Delete</button>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+<div class="bg-gray-50 p-6 rounded-lg shadow-md">
+    <h4 class="text-xl font-semibold mb-4 text-gray-700">Add New Task</h4>
+    <div class="flex flex-col md:flex-row gap-3 mb-4">
+        <input @bind="newTask.Title" placeholder="Title" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <input @bind="newTask.Description" placeholder="Description" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <input type="date" @bind="newTask.DueDate" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <button @onclick="AddTask" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">Add</button>
+    </div>
+</div>
+
+@code {
+    private List<TaskModel>? tasks;
+    private TaskModel newTask = new() { Title = string.Empty, Description = string.Empty, DueDate = DateTime.Today };
+    private Dictionary<Guid, string> taskStatus = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        tasks = await TaskService.GetTasksAsync();
+        taskStatus = tasks?.ToDictionary(t => t.Id, t => t.IsCompleted ? "Completed" : "Incomplete") ?? new();
+    }
+
+    private async Task AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask.Title))
+        {
+            await TaskService.CreateTaskAsync(newTask);
+            newTask = new() { Title = string.Empty, Description = string.Empty, DueDate = DateTime.Today };
+            await LoadTasks();
+        }
+    }
+
+
+    private async Task UpdateTask(TaskModel task)
+    {
+        await TaskService.UpdateTaskAsync(task);
+        await LoadTasks();
+    }
+
+    private async Task CompleteTask(TaskModel task, string? value)
+    {
+        if (value == "Completed" && !task.IsCompleted)
+        {
+            await TaskService.CompleteTaskAsync(task.Id);
+        }
+        else if (value == "Incomplete" && task.IsCompleted)
+        {
+            task.IsCompleted = false;
+            await TaskService.UpdateTaskAsync(task);
+        }
+        await LoadTasks();
+    }
+
+    private async Task DeleteTask(Guid id)
+    {
+        await TaskService.DeleteTaskAsync(id);
+        await LoadTasks();
+    }
+}

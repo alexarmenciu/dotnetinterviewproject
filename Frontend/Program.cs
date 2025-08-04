@@ -1,6 +1,15 @@
 using Frontend.Components;
 
+
 var builder = WebApplication.CreateBuilder(args);
+// Register HttpClient and TaskApiService with configuration
+builder.Services.AddScoped(sp => new HttpClient());
+builder.Services.AddScoped<Frontend.Services.TaskApiService>(sp =>
+    new Frontend.Services.TaskApiService(
+        sp.GetRequiredService<HttpClient>(),
+        sp.GetRequiredService<IConfiguration>()
+    )
+);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

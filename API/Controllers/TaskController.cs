@@ -1,3 +1,4 @@
+
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -86,6 +87,24 @@ namespace API.Controllers
             try
             {
                 await _taskService.DeleteTaskAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+
+        [HttpPost("{id}/complete")]
+        public async System.Threading.Tasks.Task<IActionResult> CompleteTask(Guid id)
+        {
+            try
+            {
+                await _taskService.CompleteTaskAsync(id);
                 return NoContent();
             }
             catch (KeyNotFoundException)
