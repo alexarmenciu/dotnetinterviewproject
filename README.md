@@ -18,7 +18,7 @@ docker run -it --rm -p 5000:5000 -p 5001:5001 dotnetinterviewproject
 ### 3. Access your application
 
 - API: [http://localhost:5000](http://localhost:5000)
-- Frontend: [http://localhost:5001](http://localhost:5001)
+- Frontend: [http://localhost:5001/tasks](http://localhost:5001/tasks)
 
 ---
 
