@@ -20,6 +20,11 @@ docker run -it --rm -p 5000:5000 -p 5001:5001 dotnetinterviewproject
 - API: [http://localhost:5000](http://localhost:5000)
 - Frontend: [http://localhost:5001/tasks](http://localhost:5001/tasks)
 
+### 4. Running Tests
+
+- Tests are run during the Docker build process.
+- The test results will be available in the `/app/testResults.trx` file inside the container.
+
 ---
 
 **Note:**

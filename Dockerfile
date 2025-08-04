@@ -5,14 +5,16 @@ WORKDIR /src
 # Copy solution and restore as distinct layers
 COPY . .
 
-# Build and publish API
+# Build and test API
 WORKDIR /src/API
-
-# Build the project
 RUN dotnet build -c Release
 
+# Run tests (fail build if tests fail) and save results
+WORKDIR /src/API.Tests
+RUN dotnet test --logger "trx;LogFileName=testResults.trx" --results-directory /app/testresults
 
 # Publish the API
+WORKDIR /src/API
 RUN dotnet publish -c Release -o /app/api
 
 # Build and publish Blazor frontend
@@ -33,6 +35,8 @@ WORKDIR /app
 COPY --from=build /app/api ./api
 COPY --from=build /app/frontend ./frontend
 
+# Copy test results to the final image
+COPY --from=build /app/testresults ./testresults
 
 # Expose ports for both services
 EXPOSE 5000 5001
@@ -55,5 +59,6 @@ ENTRYPOINT ["/app/start.sh"]
 
 # Instructions:
 # - To build and run: docker build -t dotnetapp . && docker run -p 5000:5000 -p 5001:5001 dotnetapp
+# - Access test results inside container: docker exec -it <container_id> ls /app/testresults
+# - Copy test results to host: docker cp <container_id>:/app/testresults ./testresults
 # - Note: EF migrations are now applied during build time
-
