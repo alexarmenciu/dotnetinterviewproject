@@ -9,7 +9,7 @@ docker build -t dotnetinterviewproject .
 ### 2. Run the Docker container
 
 ```sh
-docker run -it --rm -p 5000:5000 -p 5001:5001 dotnetinterviewproject
+docker run -e API_PORT=5000 -e FRONTEND_PORT=5001 -p 5000:5000 -p 5001:5001 dotnetinterviewproject
 ```
 
 - This will expose the API on port 5000 and the Blazor frontend on port 5001.
