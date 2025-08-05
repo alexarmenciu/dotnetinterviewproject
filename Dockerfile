@@ -52,10 +52,19 @@ ASPNETCORE_URLS="http://+:$FRONTEND_PORT" dotnet Frontend.dll &\n\
 FRONTEND_PID=$!\n\
 wait $API_PID $FRONTEND_PID' > /app/start.sh && chmod +x /app/start.sh
 
+# Set default environment variables
+ENV ConnectionStrings__DefaultConnection="Data Source=/app/data/tasks.db"
+
+# Create data directory for database
+RUN mkdir -p /app/data
+
 ENTRYPOINT ["/app/start.sh"]
 
 # Instructions:
-# - To build and run: docker build -t dotnetapp . && docker run -p 5000:5000 -p 5001:5001 dotnetapp
+# - To build and run: docker build -t dotnetinterviewproject . && docker run -p 5000:5000 -p 5001:5001 dotnetinterviewproject
+# - To use custom database: docker run -p 5000:5000 -p 5001:5001 -e "ConnectionStrings__DefaultConnection=Data Source=/app/data/custom.db" dotnetinterviewproject
+# - To use SQL Server: docker run -p 5000:5000 -p 5001:5001 -e "ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=TasksDB;Trusted_Connection=true;" dotnetinterviewproject
+# - To persist data: docker run -p 5000:5000 -p 5001:5001 -v /path/to/data:/app/data dotnetinterviewproject
 # - Access test results inside container: docker exec -it <container_id> ls /app/testresults
 # - Copy test results to host: docker cp <container_id>:/app/testresults ./testresults
 # - Note: EF migrations are now applied during build time
