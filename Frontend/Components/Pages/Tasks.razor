@@ -2,9 +2,19 @@
 @rendermode InteractiveServer
 @using Frontend.Models
 @using Frontend.Services
+@using System.Text.Json
 @inject TaskApiService TaskService
 
 <h3 class="text-2xl font-bold mb-6 text-center text-gray-800">Tasks</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <strong class="font-bold">Error:</strong>
+        <span class="block sm:inline">@errorMessage</span>
+        <button @onclick="ClearError" class="float-right font-bold text-red-700 hover:text-red-900">&times;</button>
+    </div>
+}
 
 @if (tasks == null)
 {
@@ -55,6 +65,7 @@ else
     private List<TaskModel>? tasks;
     private TaskModel newTask = new() { Title = string.Empty, Description = string.Empty, DueDate = DateTime.Today };
     private Dictionary<Guid, string> taskStatus = new();
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,44 +74,137 @@ else
 
     private async Task LoadTasks()
     {
-        tasks = await TaskService.GetTasksAsync();
-        taskStatus = tasks?.ToDictionary(t => t.Id, t => t.IsCompleted ? "Completed" : "Incomplete") ?? new();
+        try
+        {
+            tasks = await TaskService.GetTasksAsync();
+            taskStatus = tasks?.ToDictionary(t => t.Id, t => t.IsCompleted ? "Completed" : "Incomplete") ?? new();
+            ClearError();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load tasks: {FormatErrorMessage(ex.Message)}";
+        }
     }
 
     private async Task AddTask()
     {
         if (!string.IsNullOrWhiteSpace(newTask.Title))
         {
-            await TaskService.CreateTaskAsync(newTask);
-            newTask = new() { Title = string.Empty, Description = string.Empty, DueDate = DateTime.Today };
-            await LoadTasks();
+            try
+            {
+                await TaskService.CreateTaskAsync(newTask);
+                newTask = new() { Title = string.Empty, Description = string.Empty, DueDate = DateTime.Today };
+                await LoadTasks();
+                ClearError();
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Failed to add task: {FormatErrorMessage(ex.Message)}";
+            }
         }
     }
 
-
     private async Task UpdateTask(TaskModel task)
     {
-        await TaskService.UpdateTaskAsync(task);
-        await LoadTasks();
+        try
+        {
+            await TaskService.UpdateTaskAsync(task);
+            await LoadTasks();
+            ClearError();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update task: {FormatErrorMessage(ex.Message)}";
+        }
     }
 
     private async Task CompleteTask(TaskModel task, string? value)
     {
-        if (value == "Completed" && !task.IsCompleted)
+        try
         {
-            await TaskService.CompleteTaskAsync(task.Id);
+            if (value == "Completed" && !task.IsCompleted)
+            {
+                await TaskService.CompleteTaskAsync(task.Id);
+            }
+            else if (value == "Incomplete" && task.IsCompleted)
+            {
+                task.IsCompleted = false;
+                await TaskService.UpdateTaskAsync(task);
+            }
+            await LoadTasks();
+            ClearError();
         }
-        else if (value == "Incomplete" && task.IsCompleted)
+        catch (Exception ex)
         {
-            task.IsCompleted = false;
-            await TaskService.UpdateTaskAsync(task);
+            errorMessage = $"Failed to update task status: {FormatErrorMessage(ex.Message)}";
         }
-        await LoadTasks();
     }
 
     private async Task DeleteTask(Guid id)
     {
-        await TaskService.DeleteTaskAsync(id);
-        await LoadTasks();
+        try
+        {
+            await TaskService.DeleteTaskAsync(id);
+            await LoadTasks();
+            ClearError();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to delete task: {FormatErrorMessage(ex.Message)}";
+        }
+    }
+
+    private void ClearError()
+    {
+        errorMessage = null;
+    }
+
+    private string FormatErrorMessage(string rawErrorMessage)
+    {
+        try
+        {
+            // Try to parse the JSON error response
+            var jsonStart = rawErrorMessage.IndexOf('{');
+            if (jsonStart >= 0)
+            {
+                var jsonPart = rawErrorMessage.Substring(jsonStart);
+                var errorResponse = JsonSerializer.Deserialize<JsonElement>(jsonPart);
+                
+                // Check if it's a validation error response
+                if (errorResponse.TryGetProperty("errors", out var errors))
+                {
+                    var validationMessages = new List<string>();
+                    
+                    foreach (var error in errors.EnumerateObject())
+                    {
+                        var fieldName = error.Name;
+                        if (error.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var message in error.Value.EnumerateArray())
+                            {
+                                validationMessages.Add(message.GetString() ?? "");
+                            }
+                        }
+                    }
+                    
+                    if (validationMessages.Any())
+                    {
+                        return string.Join(" ", validationMessages);
+                    }
+                }
+                
+                // Check for a general title or message
+                if (errorResponse.TryGetProperty("title", out var title))
+                {
+                    return title.GetString() ?? rawErrorMessage;
+                }
+            }
+        }
+        catch
+        {
+            // If JSON parsing fails, return the original message
+        }
+        
+        return rawErrorMessage;
     }
 }
