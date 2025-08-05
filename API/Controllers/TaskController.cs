@@ -40,6 +40,12 @@ namespace API.Controllers
             {
                 return BadRequest("Task data is null.");
             }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 await _taskService.CreateTaskAsync(taskDto);
@@ -62,6 +68,12 @@ namespace API.Controllers
             {
                 return BadRequest("Task data is null or ID mismatch.");
             }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 await _taskService.UpdateTaskAsync(id, taskDto);
