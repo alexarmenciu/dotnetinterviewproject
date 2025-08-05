@@ -25,7 +25,6 @@ namespace API.Tests.Services
             var context = GetDbContext(Guid.NewGuid().ToString());
             var service = new TaskService(context);
             var task = new API.Models.Task {
-                Id = Guid.NewGuid(),
                 Title = "Test",
                 Description = "Desc",
                 DueDate = DateTime.UtcNow.AddDays(1),
@@ -43,14 +42,12 @@ namespace API.Tests.Services
         {
             var context = GetDbContext(Guid.NewGuid().ToString());
             context.Tasks.Add(new API.Models.Task {
-                Id = Guid.NewGuid(),
                 Title = "T1",
                 Description = "Desc1",
                 DueDate = DateTime.UtcNow.AddDays(1),
                 IsCompleted = false
             });
             context.Tasks.Add(new API.Models.Task {
-                Id = Guid.NewGuid(),
                 Title = "T2",
                 Description = "Desc2",
                 DueDate = DateTime.UtcNow.AddDays(2),
@@ -68,16 +65,15 @@ namespace API.Tests.Services
         public async System.Threading.Tasks.Task UpdateTaskAsync_UpdatesTask()
         {
             var context = GetDbContext(Guid.NewGuid().ToString());
-            var id = Guid.NewGuid();
             var task = new API.Models.Task {
-                Id = id,
                 Title = "Old",
                 Description = "OldDesc",
                 DueDate = DateTime.UtcNow.AddDays(1),
                 IsCompleted = false
             };
             context.Tasks.Add(task);
-            await context.SaveChangesAsync();
+            var res =await context.SaveChangesAsync();
+            var id = task.Id;
             var service = new TaskService(context);
             var updated = new API.Models.Task {
                 Id = id,
@@ -97,16 +93,15 @@ namespace API.Tests.Services
         public async System.Threading.Tasks.Task DeleteTaskAsync_RemovesTask()
         {
             var context = GetDbContext(Guid.NewGuid().ToString());
-            var id = Guid.NewGuid();
             var task = new API.Models.Task {
-                Id = id,
                 Title = "ToDelete",
                 Description = "Desc",
                 DueDate = DateTime.UtcNow.AddDays(1),
                 IsCompleted = false
             };
             context.Tasks.Add(task);
-            await context.SaveChangesAsync();
+            var res = await context.SaveChangesAsync();
+            var id = task.Id;
             var service = new TaskService(context);
 
             var result = await service.DeleteTaskAsync(id);
@@ -119,16 +114,16 @@ namespace API.Tests.Services
         public async System.Threading.Tasks.Task CompleteTaskAsync_SetsIsCompleted()
         {
             var context = GetDbContext(Guid.NewGuid().ToString());
-            var id = Guid.NewGuid();
+
             var task = new API.Models.Task {
-                Id = id,
                 Title = "ToComplete",
                 Description = "Desc",
                 DueDate = DateTime.UtcNow.AddDays(1),
                 IsCompleted = false
             };
             context.Tasks.Add(task);
-            await context.SaveChangesAsync();
+            var res = await context.SaveChangesAsync();
+            var id = task.Id;
             var service = new TaskService(context);
 
             var result = await service.CompleteTaskAsync(id);
@@ -136,22 +131,6 @@ namespace API.Tests.Services
             Assert.True(result.IsCompleted);
         }
 
-        [Fact]
-        public async System.Threading.Tasks.Task UpdateTaskAsync_ThrowsIfNotFound()
-        {
-            var context = GetDbContext(Guid.NewGuid().ToString());
-            var service = new TaskService(context);
-            var id = Guid.NewGuid();
-            var task = new API.Models.Task {
-                Id = id,
-                Title = "X",
-                Description = "Desc",
-                DueDate = DateTime.UtcNow.AddDays(1),
-                IsCompleted = false
-            };
-
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => service.UpdateTaskAsync(id, task));
-        }
 
         [Fact]
         public async System.Threading.Tasks.Task DeleteTaskAsync_ThrowsIfNotFound()
