@@ -25,10 +25,8 @@ namespace API.Validators
             RuleFor(task => task.DueDate)
                 .NotEmpty()
                 .WithMessage("Due date is required.")
-                .GreaterThan(DateTime.Now.AddMinutes(-1))
+                .Must(dueDate => dueDate.Date >= DateTime.Now.Date)
                 .WithMessage("Due date cannot be in the past.");
-
-
 
         }
     }

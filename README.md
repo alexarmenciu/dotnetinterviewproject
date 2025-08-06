@@ -27,8 +27,10 @@ docker run -e API_PORT=5000 -e FRONTEND_PORT=5001 -p 5000:5000 -p 5001:5001 dotn
 
 ### 3. Access your application
 
-- API: [http://localhost:5000](http://localhost:5000)
 - Frontend: [http://localhost:5001/tasks](http://localhost:5001/tasks)
+
+- API Spec: [http://localhost:5000/swagger](http://localhost:5000/swagger)
+- API: [http://localhost:5000/tasks](http://localhost:5000/tasks)
 
 ### 4. Running Tests
 
@@ -129,8 +131,21 @@ Test results will be saved in the `API.Tests/testresults` directory.
 
 ---
 
-**Note:**
+## Validation Assumptions
 
-- If you need to pass environment variables, use `-e VAR=value` with `docker run`.
-- The Dockerfile is set up to run both the API and the frontend together with separate port configurations.
-- If you encounter port conflicts, ensure no other services are running on ports 5000 or 5001.
+The application uses FluentValidation to enforce business rules on the `Task` model. The following assumptions are made in the validators:
+
+- **Title**
+
+  - Must not be empty.
+  - Must be between 1 and 200 characters.
+
+- **Description**
+
+  - Must not be empty.
+  - Must be between 1 and 1000 characters.
+  - Cannot be only whitespace.
+
+- **Due Date**
+  - Must not be empty.
+  - Must be either today or in the future.
