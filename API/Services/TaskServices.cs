@@ -1,6 +1,8 @@
 using API.Data;
 using API.Models;
+using API.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,10 +12,12 @@ namespace API.Services
     public class TaskService
     {
         private readonly AppDbContext _context;
+        private readonly IHubContext<TaskHub>? _hubContext;
 
-        public TaskService(AppDbContext context)
+        public TaskService(AppDbContext context, IHubContext<TaskHub>? hubContext = null)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         public async Task<List<API.Models.Task>> GetAllTasksAsync()
@@ -25,6 +29,13 @@ namespace API.Services
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
+            
+            // Notify clients about the new task
+            if (_hubContext != null)
+            {
+                await _hubContext.Clients.Group("TaskUpdates").SendAsync("TaskCreated", task);
+            }
+            
             return task;
         }
 
@@ -48,6 +59,13 @@ namespace API.Services
 
             _context.Entry(existingTask).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            
+            // Notify clients about the updated task
+            if (_hubContext != null)
+            {
+                await _hubContext.Clients.Group("TaskUpdates").SendAsync("TaskUpdated", existingTask);
+            }
+            
             return existingTask;
         }
 
@@ -58,6 +76,13 @@ namespace API.Services
             {
                 _context.Tasks.Remove(task);
                 await _context.SaveChangesAsync();
+                
+                // Notify clients about the deleted task
+                if (_hubContext != null)
+                {
+                    await _hubContext.Clients.Group("TaskUpdates").SendAsync("TaskDeleted", id);
+                }
+                
                 return task;
             }
             else
@@ -76,6 +101,13 @@ namespace API.Services
             task.IsCompleted = true;
             _context.Entry(task).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+            
+            // Notify clients about the completed task
+            if (_hubContext != null)
+            {
+                await _hubContext.Clients.Group("TaskUpdates").SendAsync("TaskCompleted", task);
+            }
+            
             return task;
         }
     }

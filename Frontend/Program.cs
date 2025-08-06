@@ -11,6 +11,9 @@ builder.Services.AddScoped<Frontend.Services.TaskApiService>(sp =>
     )
 );
 
+// Register SignalR service
+builder.Services.AddScoped<Frontend.Services.TaskSignalRService>();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

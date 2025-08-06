@@ -4,6 +4,8 @@
 @using Frontend.Services
 @using System.Text.Json
 @inject TaskApiService TaskService
+@inject TaskSignalRService SignalRService
+@implements IAsyncDisposable
 
 <h3 class="text-2xl font-bold mb-6 text-center text-gray-800">Tasks</h3>
 
@@ -70,6 +72,90 @@ else
     protected override async Task OnInitializedAsync()
     {
         await LoadTasks();
+        await SetupSignalR();
+    }
+
+    private async Task SetupSignalR()
+    {
+        try
+        {
+            // Subscribe to SignalR events
+            SignalRService.TaskCreated += OnTaskCreated;
+            SignalRService.TaskUpdated += OnTaskUpdated;
+            SignalRService.TaskCompleted += OnTaskCompleted;
+            SignalRService.TaskDeleted += OnTaskDeleted;
+
+            // Start the SignalR connection
+            await SignalRService.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to connect to real-time updates: {ex.Message}";
+        }
+    }
+
+    private void OnTaskCreated(TaskModel task)
+    {
+        InvokeAsync(() =>
+        {
+            if (tasks != null)
+            {
+                tasks.Add(task);
+                taskStatus[task.Id] = task.IsCompleted ? "Completed" : "Incomplete";
+                StateHasChanged();
+            }
+        });
+    }
+
+    private void OnTaskUpdated(TaskModel updatedTask)
+    {
+        InvokeAsync(() =>
+        {
+            if (tasks != null)
+            {
+                var existingTaskIndex = tasks.FindIndex(t => t.Id == updatedTask.Id);
+                if (existingTaskIndex >= 0)
+                {
+                    tasks[existingTaskIndex] = updatedTask;
+                    taskStatus[updatedTask.Id] = updatedTask.IsCompleted ? "Completed" : "Incomplete";
+                    StateHasChanged();
+                }
+            }
+        });
+    }
+
+    private void OnTaskCompleted(TaskModel completedTask)
+    {
+        InvokeAsync(() =>
+        {
+            if (tasks != null)
+            {
+                var existingTaskIndex = tasks.FindIndex(t => t.Id == completedTask.Id);
+                if (existingTaskIndex >= 0)
+                {
+                    tasks[existingTaskIndex] = completedTask;
+                    taskStatus[completedTask.Id] = "Completed";
+                    StateHasChanged();
+                }
+            }
+        });
+    }
+
+    private void OnTaskDeleted(Guid taskId)
+    {
+        InvokeAsync(() =>
+        {
+            if (tasks != null)
+            {
+                var taskToRemove = tasks.FirstOrDefault(t => t.Id == taskId);
+                if (taskToRemove != null)
+                {
+                    tasks.Remove(taskToRemove);
+                    taskStatus.Remove(taskId);
+                    StateHasChanged();
+                }
+            }
+        });
     }
 
     private async Task LoadTasks()
@@ -206,5 +292,17 @@ else
         }
         
         return rawErrorMessage;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Unsubscribe from SignalR events
+        SignalRService.TaskCreated -= OnTaskCreated;
+        SignalRService.TaskUpdated -= OnTaskUpdated;
+        SignalRService.TaskCompleted -= OnTaskCompleted;
+        SignalRService.TaskDeleted -= OnTaskDeleted;
+
+        // Stop the SignalR connection
+        await SignalRService.StopAsync();
     }
 }

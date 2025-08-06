@@ -1,5 +1,6 @@
 using API.Data;
 using API.Services;
+using API.Hubs;
 using Microsoft.EntityFrameworkCore;
 using API.Validators;
 using FluentValidation;
@@ -28,6 +29,21 @@ builder.Services.AddScoped<TaskService>();
 
 builder.Services.AddControllers();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add CORS for SignalR
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("SignalRPolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:7154", "http://localhost:5154") // Frontend URLs
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
@@ -54,9 +70,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("SignalRPolicy");
+
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TaskHub>("/taskhub");
 
 // Ensure proper cleanup
 try

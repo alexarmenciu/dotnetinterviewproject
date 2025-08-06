@@ -54,10 +54,10 @@ namespace API.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
-                    .Where(x => x.Value.Errors.Count > 0)
+                    .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
                 
                 return BadRequest(new { 
@@ -112,10 +112,10 @@ namespace API.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
-                    .Where(x => x.Value.Errors.Count > 0)
+                    .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
-                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
                     );
                 
                 return BadRequest(new { 
@@ -129,7 +129,7 @@ namespace API.Controllers
                 await _taskService.UpdateTaskAsync(id, taskDto);
                 return Ok(taskDto);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
                 _logger.LogWarning("Task not found during update: {TaskId}", id);
                 return NotFound(new { 
@@ -164,7 +164,7 @@ namespace API.Controllers
                 await _taskService.DeleteTaskAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
                 _logger.LogWarning("Task not found during deletion: {TaskId}", id);
                 return NotFound(new { 
@@ -191,7 +191,7 @@ namespace API.Controllers
                 await _taskService.CompleteTaskAsync(id);
                 return NoContent();
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
                 _logger.LogWarning("Task not found during completion: {TaskId}", id);
                 return NotFound(new { 
