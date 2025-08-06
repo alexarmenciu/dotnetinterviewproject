@@ -1,3 +1,13 @@
+## Running Database Migrations
+
+You can apply pending Entity Framework Core migrations to your database using the following commands from the `/API/` folder (same for both Windows and Linux/macOS). The project includes an initial migration FirstCreate.
+
+```sh
+cd API
+dotnet ef migrations add 'MigrationName'
+dotnet ef database update --connection "YourConnectionString"
+```
+
 ## Dockerizing the Application
 
 ### 1. Build the Docker image
