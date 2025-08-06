@@ -27,6 +27,77 @@ docker run -e API_PORT=5000 -e FRONTEND_PORT=5001 -p 5000:5000 -p 5001:5001 dotn
 
 ---
 
+## Running the Application Without Docker
+
+### 1. Running the API
+
+You can set the API port using the `API_PORT` environment variable.
+
+**Windows (PowerShell):**
+
+```powershell
+$env:API_PORT=5000
+cd API
+dotnet build -c Release
+dotnet run --urls=http://localhost:$env:API_PORT
+```
+
+**Linux/macOS (bash):**
+
+```sh
+export API_PORT=5000
+cd API
+dotnet build -c Release
+dotnet run --urls=http://localhost:$API_PORT
+```
+
+The API will be available at [http://localhost:5000](http://localhost:5000) (or your chosen port).
+
+### 2. Running the Frontend
+
+You can set the frontend port using the `FRONTEND_PORT` environment variable.
+
+**Windows (PowerShell):**
+
+```powershell
+$env:FRONTEND_PORT=5001
+cd Frontend
+# Install npm dependencies (if not already installed)
+npm install
+# Build Tailwind CSS
+npx tailwindcss -i ./styles/tailwind.css -o ./wwwroot/styles.css
+# Run the Blazor frontend
+dotnet run --urls=http://localhost:$env:FRONTEND_PORT
+```
+
+**Linux/macOS (bash):**
+
+```sh
+export FRONTEND_PORT=5001
+cd Frontend
+# Install npm dependencies (if not already installed)
+npm install
+# Build Tailwind CSS
+npx tailwindcss -i ./styles/tailwind.css -o ./wwwroot/styles.css
+# Run the Blazor frontend
+dotnet run --urls=http://localhost:$FRONTEND_PORT
+```
+
+The frontend will be available at [http://localhost:5001/tasks](http://localhost:5001/tasks) (or your chosen port).
+
+### 3. Running Tests
+
+To run the tests and view results:
+
+```sh
+cd API.Tests
+dotnet test --logger "trx;LogFileName=testResults.trx" --results-directory ./testresults
+```
+
+Test results will be saved in the `API.Tests/testresults` directory.
+
+---
+
 **Note:**
 
 - If you need to pass environment variables, use `-e VAR=value` with `docker run`.
