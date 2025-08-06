@@ -22,8 +22,9 @@ WORKDIR /src/Frontend
 # Install Node.js and npm for Tailwind build
 RUN apt-get update && apt-get install -y curl && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
 # Install Tailwind CSS CLI
-RUN npm install -g tailwindcss
-# Build Tailwind CSS
+# Initialize npm and install Tailwind CSS locally
+RUN npm init -y
+RUN npm install tailwindcss
 RUN npx tailwindcss -i ./styles/tailwind.css -o ./wwwroot/styles.css
 RUN dotnet publish -c Release -o /app/frontend
 
