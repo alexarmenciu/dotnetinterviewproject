@@ -22,8 +22,22 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var databaseProvider = builder.Configuration["DatabaseProvider"] ?? "SQLite";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=tasks.db"));
+{
+    switch (databaseProvider.ToUpper())
+    {
+        case "SQLSERVER":
+            options.UseSqlServer(connectionString);
+            break;
+        case "SQLITE":
+        default:
+            options.UseSqlite(connectionString);
+            break;
+    }
+});
 
 builder.Services.AddScoped<TaskService>();
 

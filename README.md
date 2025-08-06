@@ -25,6 +25,27 @@ docker run -e API_PORT=5000 -e FRONTEND_PORT=5001 -p 5000:5000 -p 5001:5001 dotn
 - Tests are run during the Docker build process.
 - The test results will be available in the `/app/testResults.trx` file inside the container.
 
+### 5. Custom Database Connection
+
+You can specify a custom database connection string using environment variables:
+
+**SQLite (default):**
+
+```sh
+docker run -p 5000:5000 -p 5001:5001 \
+  -e "ConnectionStrings__DefaultConnection=Data Source=/app/data/myapp.db" \
+  dotnetinterviewproject
+```
+
+**SQL Server:**
+
+```sh
+docker run -p 5000:5000 -p 5001:5001 \
+  -e "ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=TasksDB;User Id=sa;Password=YourPassword;" \
+  -e "DatabaseProvider=SqlServer" \
+  dotnetinterviewproject
+```
+
 ---
 
 ## Running the Application Without Docker
