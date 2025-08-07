@@ -1,3 +1,7 @@
+# Dotnet Interview Project
+
+Overview: All requirements, plus the additional nice to have features, have been implemented in this project. The README file describes how to run the project, including database migrations and Docker setup.
+
 ## Running Database Migrations
 
 You can apply pending Entity Framework Core migrations to your database using the following commands from the `/API/` folder (same for both Windows and Linux/macOS). The project includes an initial migration FirstCreate.
@@ -7,6 +11,8 @@ cd API
 dotnet ef migrations add 'MigrationName'
 dotnet ef database update --connection "YourConnectionString"
 ```
+
+These migrations will also populate the database with initial data.
 
 ## Dockerizing the Application
 
