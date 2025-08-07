@@ -25,17 +25,6 @@ namespace API.Migrations
                 {
                     table.PrimaryKey("PK_Tasks", x => x.Id);
                 });
-
-            // Seed initial data
-            migrationBuilder.InsertData(
-                table: "Tasks",
-                columns: new[] { "Id", "Title", "Description", "DueDate", "IsCompleted" },
-                values: new object[,]
-                {
-                    { Guid.NewGuid(), "Buy groceries", "Milk, Bread, Eggs", new DateTime(2025, 8, 7), false },
-                    { Guid.NewGuid(), "Finish project", "Complete the .NET interview project", new DateTime(2025, 8, 10), false },
-                    { Guid.NewGuid(), "Call Alex", "Discuss project requirements", new DateTime(2025, 8, 8), true }
-                });
         }
 
         /// <inheritdoc />

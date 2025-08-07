@@ -11,8 +11,6 @@ cd API
 dotnet ef database update --connection "YourConnectionString"
 ```
 
-These migrations will also populate the database with initial data.
-
 ## Dockerizing the Application
 
 ### 1. Build the Docker image
