@@ -55,11 +55,11 @@ else
 
 <div class="bg-gray-50 p-6 rounded-lg shadow-md">
     <h4 class="text-xl font-semibold mb-4 text-gray-700">Add New Task</h4>
-    <div class="flex flex-col md:flex-row gap-3 mb-4">
-        <input @bind="newTask.Title" placeholder="Title" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
-        <input @bind="newTask.Description" placeholder="Description" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
-        <input type="date" @bind="newTask.DueDate" class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
-        <button @onclick="AddTask" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">Add</button>
+    <div class="flex flex-col md:flex-row md:flex-wrap gap-3 mb-4">
+        <input @bind="newTask.Title" placeholder="Title" class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <input @bind="newTask.Description" placeholder="Description" class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <input type="date" @bind="newTask.DueDate" class="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <button @onclick="AddTask" class="w-full md:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors">Add</button>
     </div>
 </div>
 
