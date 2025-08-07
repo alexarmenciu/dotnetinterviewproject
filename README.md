@@ -8,7 +8,6 @@ You can apply pending Entity Framework Core migrations to your database using th
 
 ```sh
 cd API
-dotnet ef migrations add 'MigrationName'
 dotnet ef database update --connection "YourConnectionString"
 ```
 
