@@ -2,15 +2,6 @@
 
 Overview: All requirements, plus the additional nice to have features, have been implemented in this project. The README file describes how to run the project, including database migrations and Docker setup.
 
-## Running Database Migrations
-
-You can apply pending Entity Framework Core migrations to your database using the following commands from the `/API/` folder (same for both Windows and Linux/macOS). The project includes an initial migration FirstCreate.
-
-```sh
-cd API
-dotnet ef database update --connection "YourConnectionString"
-```
-
 ## Dockerizing the Application
 
 ### 1. Build the Docker image
@@ -22,7 +13,7 @@ docker build -t dotnetinterviewproject .
 ### 2. Run the Docker container
 
 ```sh
-docker run -p 5000:5000 -p 5001:5001 -e "ConnectionStrings__DefaultConnection=Data Source=YourConnectionString" dotnetinterviewproject
+docker run -e API_PORT=7000 -e FRONTEND_PORT=7001 -p 7000:7000 -p 7001:7001 --v "YourConnectionString:/app/data/tasksdb.db" -e "ConnectionStrings__DefaultConnection=Data Source=YourConnectionString" dotnetinterviewproject
 ```
 
 - This will expose the API on port 5000 and the Blazor frontend on port 5001.
@@ -62,6 +53,15 @@ docker run -p 5000:5000 -p 5001:5001 \
 ```
 
 ---
+
+## Running Database Migrations
+
+You can apply pending Entity Framework Core migrations to your database using the following commands from the `/API/` folder (same for both Windows and Linux/macOS). The project includes an initial migration FirstCreate.
+
+```sh
+cd API
+dotnet ef database update --connection "Data Source=YourConnectionString"
+```
 
 ## Running the Application Without Docker
 

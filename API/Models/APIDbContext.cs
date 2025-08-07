@@ -23,7 +23,7 @@ namespace API.Data
                     Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     Title = "Sample Task 1",
                     Description = "This is the first seeded task.",
-                    DueDate = DateTime.UtcNow.AddDays(7),
+                    DueDate = new DateTime(2025, 8, 14, 0, 0, 0, DateTimeKind.Utc),
                     IsCompleted = false
                 },
                 new API.Models.Task
@@ -31,7 +31,7 @@ namespace API.Data
                     Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     Title = "Sample Task 2",
                     Description = "This is the second seeded task.",
-                    DueDate = DateTime.UtcNow.AddDays(14),
+                    DueDate = new DateTime(2025, 8, 26, 0, 0, 0, DateTimeKind.Utc),
                     IsCompleted = false
                 }
             );
